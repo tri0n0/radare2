@@ -469,16 +469,16 @@ typedef struct r_anal_block_recurse_context_t {
 
 static bool block_recurse_successor_cb(ut64 addr, void *user) {
 	RAnalBlockRecurseContext *ctx = user;
-	if (ht_up_find_kv (ctx->visited, addr, NULL)) {
+	if (addr == UT64_MAX || ht_up_find_kv (ctx->visited, addr, NULL)) {
 		// already visited
 		return true;
 	}
 	ht_up_insert (ctx->visited, addr, NULL);
 	RAnalBlock *block = r_anal_get_block_at (ctx->anal, addr);
-	if (!block) {
+	if (block && !ht_up_find_kv (ctx->visited, block->addr, NULL)) {
+		r_pvector_push (&ctx->to_visit, block);
 		return true;
 	}
-	r_pvector_push (&ctx->to_visit, block);
 	return true;
 }
 
